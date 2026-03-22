@@ -1,0 +1,5 @@
+REPORTE DE AUDITORÍA DE INGESTA
+------------------------------
+Registros obtenidos del API: 100
+Registros almacenados en DB: 100
+Resultado: Sincronización Exitosa.
