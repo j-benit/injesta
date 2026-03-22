@@ -1,29 +1,46 @@
 name: Ejecucion Automatizada de Ingesta
 
+# Controla cuándo se ejecuta el workflow
 on:
   push:
-    branches: [ main ]
-  workflow_dispatch:
+    branches: [ main ]  # Se activa al subir cambios a main
+  workflow_dispatch:     # Permite ejecutarlo manualmente desde el botón "Run workflow"
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    # AGREGA ESTAS LÍNEAS AQUÍ:
+    
+    # PERMISOS CRÍTICOS: Permite que el bot escriba archivos en el repo
     permissions:
       contents: write
 
     steps:
-      - name: Descargar codigo del repositorio
+      # 1. Descarga el código del repositorio
+      - name: Checkout del codigo
         uses: actions/checkout@v3
-# ... (el resto del archivo sigue igual)
-      - name: Configurar AWS CLI
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
 
-      - name: Ejecutar script de ingesta
+      # 2. Configura el entorno de Python
+      - name: Configurar Python 3.12
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      # 3. Instala las librerías necesarias
+      - name: Instalar dependencias
         run: |
-          chmod +x ./scripts/ingesta.sh
-          ./scripts/ingesta.sh  
+          python -m pip install --upgrade pip
+          pip install requests pandas openpyxl
+
+      # 4. Ejecuta el script de ingesta (genera DB, Excel y TXT)
+      - name: Ejecutar script de ingesta
+        run: python src/ingestion.py
+
+      # 5. Sube los archivos generados de vuelta al repositorio
+      - name: Commit y Push de evidencias
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add src/db/ingestion.db src/xlsx/ingestion.xlsx src/static/auditoria/ingestion.txt
+          # El '|| echo' evita que el workflow falle si no hay cambios nuevos
+          git commit -m "Actualización automática: $(date +'%Y-%m-%d %H:%M')" || echo "No hay cambios para actualizar"
+          git push
