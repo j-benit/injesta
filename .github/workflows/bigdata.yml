@@ -17,31 +17,35 @@ jobs:
       - name: Checkout del codigo
         uses: actions/checkout@v3
 
+      # 2. Configura Python
       - name: Configurar Python 3.12
         uses: actions/setup-python@v4
         with:
           python-version: '3.12'
 
+      # 3. Instala dependencias
       - name: Instalar dependencias
         run: |
           python -m pip install --upgrade pip
           pip install requests pandas openpyxl
 
-      # 2. Ejecución de las 3 Fases del Proyecto Integrador
-      - name: Fase 1: Ingesta de datos (EA1)
+      # 4. Fase 1: Ingesta de datos (EA1)
+      - name: Ejecutar Ingesta (EA1)
         run: python src/ingestion.py
 
-      - name: Fase 2: Limpieza de datos (EA2)
+      # 5. Fase 2: Limpieza de datos (EA2)
+      - name: Ejecutar Limpieza (EA2)
         run: python src/cleaning.py
 
-      - name: Fase 3: Enriquecimiento de datos (EA3)
+      # 6. Fase 3: Enriquecimiento de datos (EA3)
+      - name: Ejecutar Enriquecimiento (EA3)
         run: python src/enrichement.py
 
-      # 3. Guardado Automático para videncias en el Repositorio
-      - name: Commit y Push de resultados finales
+      # 7. Guardado Automático de Evidencias
+      - name: Commit y Push de resultados
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add .
-          git commit -m "EA3: Pipeline completado - Enriquecimiento y reportes generados" || echo "Sin cambios para commitear"
+          git commit -m "EA3: Pipeline completo y enriquecimiento generado" || echo "Sin cambios"
           git push
